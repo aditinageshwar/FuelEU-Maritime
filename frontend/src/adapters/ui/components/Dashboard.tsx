@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import RouteTable from './RouteTable';
 import { Route } from '../../../core/domain/Route';
 import { RouteService } from '../../../core/application/RouteService';
@@ -6,12 +6,13 @@ import { ComplianceService } from '../../../core/application/ComplianceService';
 import { TransactionService } from '../../../core/application/TransactionService';
 import { AxiosApiClient } from '../../infrastructure/api/AxiosApiClient';
 
-const apiClient = new AxiosApiClient();
-const routeService = new RouteService(apiClient);
-const complianceService = new ComplianceService(apiClient);
-const transactionService = new TransactionService(apiClient, apiClient);
-
 const Dashboard: React.FC = () => {
+  // Initialize services inside the component to avoid hook issues
+  const apiClient = useMemo(() => new AxiosApiClient(), []);
+  const routeService = useMemo(() => new RouteService(apiClient), [apiClient]);
+  const complianceService = useMemo(() => new ComplianceService(apiClient), [apiClient]);
+  const transactionService = useMemo(() => new TransactionService(apiClient, apiClient), [apiClient]);
+
   const [routes, setRoutes] = useState<Route[]>([]);
   const [cb, setCb] = useState<number | null>(null);
   const [selectedRouteId, setSelectedRouteId] = useState<string>('');
@@ -34,45 +35,65 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const loadRoutes = async () => {
-    const data = await routeService.getAllRoutes();
-    setRoutes(data);
+    try {
+      const data = await routeService.getAllRoutes();
+      setRoutes(data);
+    } catch (error) {
+      console.error('Failed to load routes:', error);
+    }
   };
 
   const handleCreateRoute = async () => {
-    const route = await routeService.createRoute({
-      vesselId: formData.vesselId,
-      startPort: formData.startPort,
-      endPort: formData.endPort,
-      fuelUsed: parseFloat(formData.fuelUsed),
-      distance: parseFloat(formData.distance),
-    });
-    setRoutes([...routes, route]);
-    setFormData({ ...formData, vesselId: '', startPort: '', endPort: '', fuelUsed: '', distance: '' });
+    try {
+      const route = await routeService.createRoute({
+        vesselId: formData.vesselId,
+        startPort: formData.startPort,
+        endPort: formData.endPort,
+        fuelUsed: parseFloat(formData.fuelUsed),
+        distance: parseFloat(formData.distance),
+      });
+      setRoutes([...routes, route]);
+      setFormData({ ...formData, vesselId: '', startPort: '', endPort: '', fuelUsed: '', distance: '' });
+    } catch (error) {
+      console.error('Failed to create route:', error);
+    }
   };
 
   const handleCalculateCB = async () => {
     if (selectedRouteId) {
-      const calculatedCb = await complianceService.calculateCompliance(selectedRouteId);
-      setCb(calculatedCb);
+      try {
+        const calculatedCb = await complianceService.calculateCompliance(selectedRouteId);
+        setCb(calculatedCb);
+      } catch (error) {
+        console.error('Failed to calculate CB:', error);
+      }
     }
   };
 
   const handleProcessTransaction = async () => {
-    await transactionService.processTransaction(
-      formData.bankingVesselId,
-      parseFloat(formData.amount),
-      formData.type
-    );
-    alert('Transaction processed');
+    try {
+      await transactionService.processTransaction(
+        formData.bankingVesselId,
+        parseFloat(formData.amount),
+        formData.type
+      );
+      alert('Transaction processed');
+    } catch (error) {
+      console.error('Failed to process transaction:', error);
+    }
   };
 
   const handleCreatePooling = async () => {
-    await transactionService.createPooling(
-      formData.poolingFrom,
-      formData.poolingTo,
-      parseFloat(formData.cbAmount)
-    );
-    alert('Pooling created');
+    try {
+      await transactionService.createPooling(
+        formData.poolingFrom,
+        formData.poolingTo,
+        parseFloat(formData.cbAmount)
+      );
+      alert('Pooling created');
+    } catch (error) {
+      console.error('Failed to create pooling:', error);
+    }
   };
 
   return (
@@ -108,8 +129,12 @@ const Dashboard: React.FC = () => {
 
       {/* Routes */}
       <RouteTable routes={routes} onDelete={async (id) => {
-        await routeService.deleteRoute(id);
-        loadRoutes();
+        try {
+          await routeService.deleteRoute(id);
+          loadRoutes();
+        } catch (error) {
+          console.error('Failed to delete route:', error);
+        }
       }} />
 
       {/* Create Route Form */}
