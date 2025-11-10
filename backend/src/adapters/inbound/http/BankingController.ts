@@ -22,7 +22,8 @@ export class BankingController {
     try {
       const { vesselId, amount, type } = req.body;
       if (!vesselId || amount == null || !['credit', 'debit'].includes(type)) {
-        return res.status(400).json({ error: 'Invalid fields' });
+        res.status(400).json({ error: 'Invalid fields' });
+        return;
       }
       await this.processTransaction.execute(vesselId, amount, type);
       res.status(201).json({ message: 'Transaction processed' });
