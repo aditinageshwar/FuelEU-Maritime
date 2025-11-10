@@ -1,0 +1,5 @@
+# Reflection on AI Agent Usage
+
+Using AI agents like Copilot, Claude Code, and Cursor Agent accelerated development by 50-70%, especially for boilerplate and refactoring. Copilot excelled at quick completions, reducing typing for React components and API routes, but required corrections for architecture purity. Claude Code was invaluable for enforcing Hexagonal patterns, catching domain leaks early. Cursor Agent's task planning prevented scope creep by organizing work into manageable subtasks.
+
+Efficiency gains included faster prototyping (e.g., generating a full tab in minutes), but manual validation was crucial for accuracy—agents hallucinated 10-15% of outputs, like incorrect formulas or imports. Next time, I'd integrate agents earlier in planning (e.g., use Claude for initial architecture sketches) and add more automated testing prompts to reduce corrections. Overall, agents enhanced productivity without sacrificing quality, proving useful for complex, domain-driven projects like this.
